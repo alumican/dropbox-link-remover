@@ -1,6 +1,6 @@
 # Dropbox Link Remover
 
-![Dropbox Link Remover deleting shared links](docs/hero.png)
+<p align="center"><img src="docs/hero.png" width="468" alt="Dropbox Link Remover panel deleting shared links"></p>
 
 A Chrome extension that bulk-deletes the shared links on [dropbox.com/share/links](https://www.dropbox.com/share/links). It repeats Dropbox's own steps for each row — "…" menu, "Delete view link" / "Delete edit link", confirm — until no links are left.
 

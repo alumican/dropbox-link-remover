@@ -66,3 +66,7 @@ body.demo {
   position: fixed; left: 240px; bottom: 24px; padding: 10px 16px; border-radius: 8px;
   background: #1e1919; color: #fff; font-size: 13px;
 }
+
+/* ?demo=hero: transparent page with the list kept to the left, so only the panel and its shadow are captured */
+body.demo.hero { background: transparent; }
+.demo.hero main { max-width: 520px; }

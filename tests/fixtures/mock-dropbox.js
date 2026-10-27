@@ -7,7 +7,7 @@
 //   ui=ja|en                Dropbox UI language of the mock (default: ja)
 //   linger=<ms>             a fully deleted row stays listed (with a dead "…" button) this long before it disappears
 //   loadDelay=<ms>          the list renders only after this delay, like a page that is still loading
-//   demo=1                  styled page for screenshots
+//   demo=1 | demo=hero      styled page for screenshots (hero: transparent, list kept to the left)
 //
 // The page exposes window.mock for the test runner:
 //   mock.links()   remaining links per row, e.g. [["view"], []]
@@ -188,6 +188,7 @@
   if (demo) {
     document.head.insertAdjacentHTML('beforeend', `<link rel="stylesheet" href="/tests/fixtures/mock-dropbox-demo.css">`);
     document.body.classList.add('demo');
+    if (params.get('demo') === 'hero') document.body.classList.add('hero');
   }
   window.mock = { links: () => data.map((d) => d.links), danger };
   if (loadDelay) setTimeout(render, loadDelay);
