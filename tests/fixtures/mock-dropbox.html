@@ -1,0 +1,18 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Mock Dropbox shared links</title>
+<body>
+  <!-- Always-visible page chrome, like Dropbox's top bar and sidebar -->
+  <div role="menubar"><div role="menuitem">ストレージを追加</div><div role="menuitem">YO</div></div>
+  <div class="sidebar"><div role="row">すべてのファイル</div><div role="row">写真</div><div role="row">共有済み</div></div>
+
+  <table>
+    <thead><tr><th>名前 <button aria-haspopup="true" aria-label="並べ替えメニュー">▾</button></th><th></th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <div id="status" role="status"></div>
+
+  <script src="/tests/fixtures/chrome-stub.js"></script>
+  <script src="/tests/fixtures/mock-dropbox.js"></script>
+  <script src="/content.js"></script>
+</body>

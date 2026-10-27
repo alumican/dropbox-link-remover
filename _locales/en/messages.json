@@ -1,0 +1,81 @@
+{
+  "extName": {
+    "message": "Dropbox Link Remover",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "Deletes view links and edit links one by one from the Dropbox shared links page (dropbox.com/share/links).",
+    "description": "Extension description"
+  },
+  "uiRunning": {
+    "message": "Running",
+    "description": "Tooltip of the running indicator"
+  },
+  "uiCollapse": {
+    "message": "Collapse"
+  },
+  "uiExpand": {
+    "message": "Expand"
+  },
+  "uiTargets": {
+    "message": "Targets",
+    "description": "Row label for the link type checkboxes"
+  },
+  "uiViewLinks": {
+    "message": "View links"
+  },
+  "uiEditLinks": {
+    "message": "Edit links"
+  },
+  "uiDeleteAll": {
+    "message": "Run all",
+    "description": "Row label"
+  },
+  "uiStart": {
+    "message": "Start"
+  },
+  "uiStop": {
+    "message": "Stop"
+  },
+  "uiCountSuffix": {
+    "message": "link deleted",
+    "description": "Shown after the number of deleted links"
+  },
+  "uiTest": {
+    "message": "Test",
+    "description": "Row label"
+  },
+  "uiDiagnose": {
+    "message": "Diagnose"
+  },
+  "uiDeleteOne": {
+    "message": "Run 1",
+    "description": "Deletes a single link as a test run"
+  },
+  "uiCopyLog": {
+    "message": "Copy log"
+  },
+  "uiNote": {
+    "message": "Deleted links cannot be restored. Do not use this tab while it is running."
+  },
+  "kindView": {
+    "message": "view links",
+    "description": "Used inside sentences"
+  },
+  "kindEdit": {
+    "message": "edit links",
+    "description": "Used inside sentences"
+  },
+  "kindSeparator": {
+    "message": " and ",
+    "description": "Joins the two link kinds"
+  },
+  "confirmDeleteAll": {
+    "message": "Delete all $1 in the list? This cannot be undone.",
+    "description": "$1: link kinds"
+  },
+  "uiStoppedByUser": {
+    "message": "Stopped because user activity was detected.",
+    "description": "Shown in red below the note"
+  }
+}
