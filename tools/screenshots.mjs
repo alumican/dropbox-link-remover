@@ -12,7 +12,7 @@ const SHADOW_MARGIN = { x: 48, top: 32, bottom: 64 }; // room for --shadow-panel
 const server = await startServer();
 const chrome = await launchChrome();
 try {
-  const page = await openPage(chrome, `http://127.0.0.1:${server.address().port}`, 'lang=en&ui=en&rows=demo&demo=hero', VIEWPORT);
+  const page = await openPage(chrome, `http://127.0.0.1:${server.address().port}`, 'ui=en&rows=demo&demo=hero', VIEWPORT);
   await page.send('Emulation.setDefaultBackgroundColorOverride', { color: { r: 0, g: 0, b: 0, a: 0 } });
   // Page styles beat :host rules, so this overrides the panel's inset token
   await page.evaluate(`document.getElementById('dlr-host').style.setProperty('--panel-inset', '${PANEL_INSET}px')`);

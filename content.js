@@ -92,16 +92,65 @@
     }
   };
 
-  // ---- i18n (strings live in _locales/<lang>/messages.json; Chrome falls back to English) ----
-  const t = (key, ...subs) => {
-    try {
-      return chrome.i18n.getMessage(key, subs.map(String)) || key;
-    } catch {
-      return key;
-    }
+  // ---- Panel strings ----
+  // The panel follows the Dropbox UI language (<html lang>), not the browser's; anything else falls back to English.
+  // (_locales/ only holds the extension's name and description, which Chrome shows in the browser's language.)
+  const UI_MESSAGES = {
+    en: {
+      uiRunning: 'Running',
+      uiCollapse: 'Collapse',
+      uiExpand: 'Expand',
+      uiTargets: 'Targets',
+      uiViewLinks: 'View links',
+      uiEditLinks: 'Edit links',
+      uiDeleteAll: 'Run all',
+      uiStart: 'Start',
+      uiStop: 'Stop',
+      uiCountSuffix: 'link deleted',
+      uiTest: 'Test',
+      uiDiagnose: 'Diagnose',
+      uiDeleteOne: 'Run 1',
+      uiCopyLog: 'Copy log',
+      uiNote: 'Deleted links cannot be restored. Do not use this tab while it is running.',
+      kindView: 'view links',
+      kindEdit: 'edit links',
+      kindSeparator: ' and ',
+      confirmDeleteAll: 'Delete all $1 in the list? This cannot be undone.',
+      uiStoppedByUser: 'Stopped because user activity was detected.',
+    },
+    ja: {
+      uiRunning: '実行中',
+      uiCollapse: '折りたたむ',
+      uiExpand: '展開する',
+      uiTargets: '削除対象',
+      uiViewLinks: '閲覧リンク',
+      uiEditLinks: '編集リンク',
+      uiDeleteAll: 'すべて実行',
+      uiStart: '開始',
+      uiStop: '停止',
+      uiCountSuffix: '件のリンクを削除',
+      uiTest: 'テスト',
+      uiDiagnose: '診断',
+      uiDeleteOne: '1件実行',
+      uiCopyLog: 'ログをコピー',
+      uiNote: '削除したリンクは元に戻せません。実行中はこのタブを操作しないでください。',
+      kindView: '閲覧リンク',
+      kindEdit: '編集リンク',
+      kindSeparator: '・',
+      confirmDeleteAll: '一覧にあるすべての$1を削除します。元に戻せません。よろしいですか?',
+      uiStoppedByUser: 'ユーザーの操作を検出したため停止しました',
+    },
   };
+  const UI_LANG = (() => {
+    const lang = (document.documentElement.lang || '').toLowerCase().split('-')[0];
+    return lang in UI_MESSAGES ? lang : 'en';
+  })();
 
-  // ---- Log messages (always English, so logs read the same whatever the browser language) ----
+  // $1..$9 are replaced with the substitutions, like chrome.i18n.getMessage
+  const format = (template, subs) => template.replace(/\$([1-9])/g, (_, d) => String(subs[d - 1] ?? ''));
+  const t = (key, ...subs) => format(UI_MESSAGES[UI_LANG][key] ?? UI_MESSAGES.en[key] ?? key, subs);
+
+  // ---- Log messages (always English, so logs read the same whatever the UI language) ----
   const LOG_MESSAGES = {
     logReady: 'Ready. Press “$1” first to check that items can be detected.', // $1: Diagnose button label
     logSelectTargets: 'Select at least one target.',
@@ -177,8 +226,7 @@
     kindView: 'view links',
     kindEdit: 'edit links',
   };
-  // $1..$9 are replaced with the substitutions, like chrome.i18n.getMessage
-  const L = (key, ...subs) => (LOG_MESSAGES[key] ?? key).replace(/\$([1-9])/g, (_, d) => String(subs[d - 1] ?? ''));
+  const L = (key, ...subs) => format(LOG_MESSAGES[key] ?? key, subs);
 
   // ---- Utilities ----
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -1049,7 +1097,7 @@
   const root = host.attachShadow({ mode: 'open' });
   root.innerHTML = `
     <style>${PANEL_CSS}</style>
-    <div class="panel" id="panel" lang="${chrome.i18n.getUILanguage()}">
+    <div class="panel" id="panel" lang="${UI_LANG}">
       <div class="head">
         <svg class="logo" viewBox="0 0 24 24" aria-hidden="true">
           <path class="logo-shield" d="M12 1.6 20.4 4.6V11c0 5.4-3.5 9.6-8.4 11.4C7.1 20.6 3.6 16.4 3.6 11V4.6Z"/>

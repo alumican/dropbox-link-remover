@@ -4,7 +4,8 @@
 // Query parameters:
 //   rows=basic|duplicates|demo   data set (default: basic)
 //   scenario=normal|submenu-ok|submenu-danger|file-dialog|no-confirm   menu / dialog behaviour (default: normal)
-//   ui=ja|en                Dropbox UI language of the mock (default: ja)
+//   ui=ja|en                Dropbox UI language of the mock, also set as <html lang> (default: ja)
+//   htmlLang=<tag>          overrides <html lang> (e.g. fr, ja-JP)
 //   linger=<ms>             a fully deleted row stays listed (with a dead "…" button) this long before it disappears
 //   loadDelay=<ms>          the list renders only after this delay, like a page that is still loading
 //   demo=1 | demo=hero      styled page for screenshots (hero: transparent, list kept to the left)
@@ -58,6 +59,7 @@
     },
   };
   const T = TEXT[params.get('ui') || 'ja'];
+  document.documentElement.lang = params.get('htmlLang') || params.get('ui') || 'ja';
 
   const DATA_SETS = {
     basic: [

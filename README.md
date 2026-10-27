@@ -25,8 +25,8 @@ Timings and text patterns are constants at the top of `content.js`.
 
 ## Languages
 
-- Panel: 🇺🇸 English, 🇯🇵 Japanese (follows the browser language; others fall back to English). The log is always English
 - Dropbox UI: 🇺🇸 English, 🇯🇵 Japanese
+- Panel: follows the Dropbox UI language (others fall back to English). The log is always English
 
 ## Testing
 

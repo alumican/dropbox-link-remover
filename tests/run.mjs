@@ -29,8 +29,8 @@ async function runAll(page) {
 // Each test opens the mock page with `query` (see tests/fixtures/mock-dropbox.js) and runs `run`
 const tests = [
   {
-    name: 'deletes every link and skips rows without links (Japanese UI, English log)',
-    query: 'lang=ja',
+    name: 'deletes every link and skips rows without links (Japanese Dropbox UI: Japanese panel, English log)',
+    query: '',
     run: async (page) => {
       const log = await runAll(page);
       same(await page.links(), [[], [], []], 'remaining links');
@@ -44,8 +44,8 @@ const tests = [
     },
   },
   {
-    name: 'falls back to English for an unsupported browser language',
-    query: 'lang=fr',
+    name: 'the panel falls back to English for an unsupported Dropbox UI language',
+    query: 'htmlLang=fr',
     run: async (page) => {
       same(await page.text('.label'), ['Targets', 'Test', 'Run all'], 'row labels');
       same(await page.text('#diag, #one, #start, #stop'), ['Diagnose', 'Run 1', 'Start', 'Stop'], 'buttons');
@@ -54,7 +54,7 @@ const tests = [
   },
   {
     name: 'Run 1 deletes exactly one link',
-    query: 'lang=ja',
+    query: '',
     run: async (page) => {
       await page.click('one');
       await page.waitForLog('■ Finished');
@@ -64,7 +64,7 @@ const tests = [
   },
   {
     name: 'Diagnose finds the menu item and deletes nothing',
-    query: 'lang=ja',
+    query: '',
     run: async (page) => {
       await page.click('diag');
       await page.waitForLog('Diagnose finished');
@@ -75,7 +75,7 @@ const tests = [
   },
   {
     name: 'waits for a row that Dropbox removes late',
-    query: 'lang=ja&linger=1200',
+    query: 'linger=1200',
     run: async (page) => {
       const log = await runAll(page);
       same(await page.links(), [[], [], []], 'remaining links');
@@ -86,7 +86,7 @@ const tests = [
   },
   {
     name: 'started while the page loads: waits for the list, ignores the sidebar, handles same-name rows separately',
-    query: 'lang=en&rows=duplicates&loadDelay=3000',
+    query: 'rows=duplicates&loadDelay=3000',
     run: async (page) => {
       const log = await runAll(page);
       same(await page.links(), [[], [], [], [], [], []], 'remaining links');
@@ -98,7 +98,7 @@ const tests = [
   },
   {
     name: 'Stop finishes the deletion in flight and counts it',
-    query: 'lang=ja',
+    query: '',
     run: async (page) => {
       await page.click('start');
       await page.waitForLog('Clicked “リンクを削除”');
@@ -114,7 +114,7 @@ const tests = [
   },
   {
     name: 'user activity outside the panel stops the run; inside the panel it does not',
-    query: 'lang=ja',
+    query: '',
     run: async (page) => {
       await page.click('start');
       await page.waitForLog('✓ Link deleted');
@@ -132,7 +132,7 @@ const tests = [
   },
   {
     name: 'safety: a submenu with the link delete item is used',
-    query: 'lang=en&scenario=submenu-ok',
+    query: 'scenario=submenu-ok',
     run: async (page) => {
       await runAll(page);
       same(await page.danger(), [], 'dangerous actions');
@@ -141,7 +141,7 @@ const tests = [
   },
   {
     name: 'safety: a submenu with only "削除" / "ファイルを削除" is never clicked',
-    query: 'lang=en&scenario=submenu-danger',
+    query: 'scenario=submenu-danger',
     run: async (page) => {
       const log = await runAll(page);
       same(await page.danger(), [], 'dangerous actions');
@@ -152,7 +152,7 @@ const tests = [
   },
   {
     name: 'safety: a file-deletion confirmation is never accepted',
-    query: 'lang=en&scenario=file-dialog',
+    query: 'scenario=file-dialog',
     run: async (page) => {
       const log = await runAll(page);
       same(await page.danger(), [], 'dangerous actions');
@@ -163,7 +163,7 @@ const tests = [
   },
   {
     name: 'a confirmation without a delete button fails and logs the dialog',
-    query: 'lang=en&scenario=no-confirm',
+    query: 'scenario=no-confirm',
     run: async (page) => {
       const log = await runAll(page);
       same(await page.links(), INITIAL_BASIC, 'links');
@@ -173,7 +173,7 @@ const tests = [
   },
   {
     name: 'an extension reload mid-run stops the run and removes the panel',
-    query: 'lang=ja',
+    query: '',
     run: async (page) => {
       await page.click('start');
       await page.waitForLog('✓ Link deleted');
@@ -190,7 +190,7 @@ const tests = [
   },
   {
     name: 'the copy icon copies the log',
-    query: 'lang=en',
+    query: '',
     run: async (page) => {
       await page.send('Browser.grantPermissions', { permissions: ['clipboardReadWrite', 'clipboardSanitizedWrite'] }).catch(() => {});
       await page.click('copy');
@@ -202,7 +202,7 @@ const tests = [
   },
   {
     name: 'English Dropbox UI: deletes every link',
-    query: 'lang=en&ui=en',
+    query: 'ui=en',
     run: async (page) => {
       const log = await runAll(page);
       same(await page.links(), [[], [], []], 'remaining links');
@@ -215,7 +215,7 @@ const tests = [
   },
   {
     name: 'English Dropbox UI safety: a submenu with only "Delete" / "Delete file" is never clicked',
-    query: 'lang=en&ui=en&scenario=submenu-danger',
+    query: 'ui=en&scenario=submenu-danger',
     run: async (page) => {
       const log = await runAll(page);
       same(await page.danger(), [], 'dangerous actions');
@@ -225,11 +225,26 @@ const tests = [
   },
   {
     name: 'English Dropbox UI safety: a file-deletion confirmation is never accepted',
-    query: 'lang=en&ui=en&scenario=file-dialog',
+    query: 'ui=en&scenario=file-dialog',
     run: async (page) => {
       await runAll(page);
       same(await page.danger(), [], 'dangerous actions');
       same(await page.links(), INITIAL_BASIC, 'links');
+    },
+  },
+  {
+    name: 'the panel follows the Dropbox UI language (English UI, region subtag)',
+    query: 'ui=en&htmlLang=en-GB',
+    run: async (page) => {
+      same(await page.text('.label'), ['Targets', 'Test', 'Run all'], 'row labels');
+      check((await page.evaluate(`document.getElementById('dlr-host').shadowRoot.getElementById('panel').lang`)) === 'en', 'panel lang');
+    },
+  },
+  {
+    name: 'the panel follows the Dropbox UI language (ja-JP)',
+    query: 'htmlLang=ja-JP',
+    run: async (page) => {
+      same(await page.text('#diag, #one, #start, #stop'), ['診断', '1件実行', '開始', '停止'], 'buttons');
     },
   },
 ];
