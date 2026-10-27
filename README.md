@@ -25,8 +25,8 @@ Timings and text patterns are constants at the top of `content.js`.
 
 ## Languages
 
-- Dropbox UI: 🇺🇸 English, 🇯🇵 Japanese
-- Panel: follows the Dropbox UI language (others fall back to English). The log is always English
+- Dropbox UI: all languages. Menu items and the confirm button are found by Dropbox's class names (checked with 🇯🇵 🇺🇸 🇫🇷 🇨🇳). Outside 🇯🇵 Japanese and 🇺🇸 English, view and edit links cannot be told apart, so keep both Targets checked
+- Panel: 🇯🇵 Japanese, 🇺🇸 English, following the Dropbox UI language (others fall back to English). The log is always English
 
 ## Testing
 

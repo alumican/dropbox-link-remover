@@ -70,7 +70,12 @@ const tests = [
       await page.waitForLog('Diagnose finished');
       const log = await page.log();
       includes(log, 'Menu item for the link deletion: “閲覧リンクを削除”');
+      includes(log, 'class="delete-link +1 dig-*"'); // attributes of each menu item, generated classes only counted
+      includes(log, 'Confirmation dialog: <div class="overlay db-modal" role="dialog">');
+      includes(log, '→ Button that would confirm: “リンクを削除”');
+      includes(log, 'Confirmation dialog closed without confirming');
       same(await page.links(), INITIAL_BASIC, 'links');
+      check(await page.evaluate(`!document.querySelector('.overlay')`), 'no menu or dialog may stay open');
     },
   },
   {
@@ -168,7 +173,7 @@ const tests = [
       const log = await runAll(page);
       same(await page.links(), INITIAL_BASIC, 'links');
       includes(log, 'Delete button in the confirmation dialog not found');
-      includes(log, 'buttons: "キャンセル", "OK"');
+      includes(log, 'buttons: "閉じる", "OK", "キャンセル"');
     },
   },
   {
@@ -245,6 +250,49 @@ const tests = [
     query: 'htmlLang=ja-JP',
     run: async (page) => {
       same(await page.text('#diag, #one, #start, #stop'), ['診断', '1件実行', '開始', '停止'], 'buttons');
+    },
+  },
+  {
+    name: 'Diagnose closes the confirmation dialog with Cancel when Escape does not work (English UI)',
+    query: 'ui=en&noEscape=1',
+    run: async (page) => {
+      await page.click('diag');
+      await page.waitForLog('Diagnose finished');
+      const log = await page.log();
+      includes(log, '→ Button that would confirm: “Delete link”');
+      includes(log, 'Confirmation dialog closed without confirming');
+      same(await page.links(), INITIAL_BASIC, 'links');
+    },
+  },
+  {
+    name: 'French Dropbox UI: view links are found by Dropbox\'s class names, without French patterns',
+    query: 'ui=fr',
+    run: async (page) => {
+      const log = await runAll(page);
+      // The view-link item carries "delete-link"; the edit-link item's markup is unknown, so it stays
+      same(await page.links(), [['edit'], [], []], 'remaining links');
+      includes(log, 'Selected “Supprimer le lien de consultation”');
+      includes(log, 'Clicked “Supprimer le lien” in the confirmation dialog');
+      same(await page.text('.label'), ['Targets', 'Test', 'Run all'], 'panel falls back to English');
+    },
+  },
+  {
+    name: 'French Dropbox UI: with only one Target, an item whose kind cannot be told is not deleted',
+    query: 'ui=fr',
+    run: async (page) => {
+      await page.click('kedit'); // view links only
+      const log = await runAll(page);
+      same(await page.links(), INITIAL_BASIC, 'links');
+      includes(log, 'Cannot tell view and edit links apart in this Dropbox language');
+    },
+  },
+  {
+    name: 'French Dropbox UI safety: a file-deletion dialog is never accepted, even after a "delete-link" item',
+    query: 'ui=fr&scenario=file-dialog',
+    run: async (page) => {
+      await runAll(page);
+      same(await page.danger(), [], 'dangerous actions');
+      same(await page.links(), INITIAL_BASIC, 'links');
     },
   },
 ];

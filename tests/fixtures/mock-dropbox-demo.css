@@ -61,7 +61,8 @@ body.demo {
   margin-left: 8px; height: 32px; padding: 0 14px; border-radius: 8px; border: 1px solid #ddd8d2;
   background: #fff; font: inherit;
 }
-.demo [role="dialog"] button:last-child { border-color: #1e1919; background: #1e1919; color: #fff; }
+.demo [role="dialog"] .db-modal-x { display: none; }
+.demo [role="dialog"] .button-primary { border-color: #1e1919; background: #1e1919; color: #fff; }
 .demo #status:not(:empty) {
   position: fixed; left: 240px; bottom: 24px; padding: 10px 16px; border-radius: 8px;
   background: #1e1919; color: #fff; font-size: 13px;

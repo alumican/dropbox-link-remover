@@ -17,6 +17,11 @@
   const GOOGLE_FONTS_URL =
     'https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap';
   const MORE_BUTTON_TESTID = 'open-menu-button'; // data-testid of Dropbox's "…" button
+  // Language-independent markers in Dropbox's markup (checked in Japanese, English, French and Chinese)
+  const DELETE_LINK_ITEM_CLASS_RE = /^delete-(?:(view|edit)-)?link$/; // the "Delete view link" item has class "delete-link"
+  const CONFIRM_DIALOG_SELECTOR = '.db-modal';
+  const CONFIRM_BUTTON_SELECTOR = '.button-primary.dbmodal-button';
+  const CANCEL_BUTTON_SELECTOR = '.button-tertiary.dbmodal-button, .db-modal-x';
 
   // Timing (ms)
   const DEFAULT_DELAY_MS = 300; // wait between deletions
@@ -34,6 +39,7 @@
   const LOAD_MORE_TIMEOUT_MS = 5000; // after pressing "Show more"
   const SCROLL_LOAD_TIMEOUT_MS = 3000; // after scrolling to the bottom
   const DIAGNOSE_HOVER_WAIT_MS = 600;
+  const DIAGNOSE_DIALOG_CLOSE_MS = 1500; // per attempt to close the inspected confirmation dialog
   const VISIBILITY_CHECK_MS = 1000; // panel show / hide check (follows SPA navigation)
 
   // Limits
@@ -58,7 +64,9 @@
   const EDIT_RE = /編集(用)?リンク|edit(or)?\s*link|link\s*for\s*edit/i;
   const GENERIC_DELETE_LINK_RE = /リンクを削除|リンクの削除|delete\s*link|remove\s*link/i;
   const DELETE_RE = /削除|delete|remove|無効/i;
-  const LINK_RE = /リンク|link/i; // a confirmation dialog must mention links before its delete button is pressed
+  // A confirmation dialog must mention links before its delete button is pressed. "link" in Dropbox's languages:
+  // ja, en/de/nl/it/pt/pl/da, fr, es, ru, uk, sv, nb, id, ms, th, ko, zh-Hans, zh-Hant
+  const LINK_RE = /リンク|link|lien|enlace|vínculo|ссылк|посилан|länk|lenke|kobling|tautan|pautan|ลิงก์|링크|链接|連結/i;
   const NON_DELETE_RE = /コピー|copy|設定|setting|作成|create|表示|開く|open|変更|change/i;
   const CANCEL_RE = /キャンセル|cancel|閉じる|close|戻る|back|いいえ|no\b/i;
   const MORE_LABEL_RE = /その他|もっと|アクション|オプション|メニュー|more|action|option|overflow|menu|…|\.\.\.|⋯/i;
@@ -189,6 +197,8 @@
     reasonNoButton: 'no “…” button',
     logDeleted: '✓ Link deleted (#$1, $2s)',
     logNotice: 'Dropbox notice: $1',
+    logUndecidableKind: 'Cannot tell view and edit links apart in this Dropbox language; enable both Targets: $1 (menu: $2)',
+    reasonUndecidableKind: 'view / edit cannot be told apart in this language',
     logWaitingForList: 'Waiting for the link list to load…',
     logListReady: 'Link list loaded ($1 rows, $2s)',
     logListNotReady: 'Link list did not appear within $1s; continuing with the rows found',
@@ -221,6 +231,14 @@
     diagTarget: '→ Menu item for the link deletion: “$1”',
     diagNoTarget: '→ No menu item for a link deletion found',
     diagEnd: '--- Diagnose finished (no links were deleted) ---',
+    diagMenu: 'Menu: $1',
+    diagOpenDialog: 'Opening the confirmation dialog of “$1” to inspect it (it will be closed without confirming)',
+    diagDialog: 'Confirmation dialog: $1',
+    diagDialogNotOpened: 'No confirmation dialog appeared',
+    diagConfirmChoice: '→ Button that would confirm: “$1”',
+    diagNoConfirmChoice: '→ No button would be pressed to confirm',
+    diagDialogClosed: 'Confirmation dialog closed without confirming',
+    diagDialogStillOpen: 'The confirmation dialog is still open; close it with its cancel button. Do not confirm',
     logUserActivity: 'User activity detected ($1); stopping',
     endUserActivity: 'user activity',
     kindView: 'view links',
@@ -286,10 +304,23 @@
     target.dispatchEvent(new KeyboardEvent('keyup', opts));
   }
 
+  // Dropbox's cancel / close button of a dialog (any language), else one labelled like "Cancel"
+  const findCancelButton = (dialog) =>
+    [...dialog.querySelectorAll(CANCEL_BUTTON_SELECTOR)].find(isVisible) ||
+    [...dialog.querySelectorAll('button, [role="button"]')].find((b) => isVisible(b) && CANCEL_RE.test(labelOf(b)));
+
   async function closeOverlays() {
     for (let i = 0; i < MAX_ESCAPE_PRESSES && (getOpenMenus().length || getOpenDialogs().length); i++) {
       pressEscape();
       await sleep(ESCAPE_WAIT_MS);
+    }
+    // A dialog that ignores Escape is closed with its cancel button (never its confirm button)
+    for (const d of getOpenDialogs()) {
+      const cancel = findCancelButton(d);
+      if (cancel) {
+        simpleClick(cancel);
+        await sleep(ESCAPE_WAIT_MS);
+      }
     }
   }
 
@@ -453,6 +484,12 @@
   function findConfirmButton() {
     for (const d of getOpenDialogs()) {
       if (!LINK_RE.test(textOf(d))) continue;
+      // Dropbox's own modal: its primary button, whatever the language
+      if (d.matches(CONFIRM_DIALOG_SELECTOR)) {
+        const primary = [...d.querySelectorAll(CONFIRM_BUTTON_SELECTOR)].find((b) => isVisible(b) && !isDisabled(b));
+        if (primary) return primary;
+      }
+      // Otherwise a delete-like button (Japanese / English wording)
       const buttons = [...d.querySelectorAll('button, [role="button"]')].filter((b) => {
         if (!isVisible(b) || isDisabled(b)) return false;
         const l = labelOf(b);
@@ -463,6 +500,25 @@
     return null;
   }
 
+  // The class-based match of a link-deletion menu item: { kind } with kind 'view' / 'edit' or null when unknown
+  function linkItemMarker(el) {
+    for (const c of el.classList) {
+      const m = c.match(DELETE_LINK_ITEM_CLASS_RE);
+      if (m) {
+        const l = labelOf(el);
+        // The kind comes from the class when it says so, else from the (Japanese / English) text
+        return { kind: m[1] || (VIEW_RE.test(l) ? 'view' : EDIT_RE.test(l) ? 'edit' : null) };
+      }
+    }
+    return null;
+  }
+
+  // A link-deletion item whose kind cannot be told in this language, while only one of the Targets is enabled
+  const isUndecidableItem = (el) => {
+    const marker = linkItemMarker(el);
+    return !!marker && !marker.kind && !(settings.view && settings.edit);
+  };
+
   // Pick the menu item to delete
   function pickDeleteItem(items) {
     let best = null;
@@ -470,10 +526,19 @@
       if (isDisabled(el)) continue;
       const l = labelOf(el);
       let kind = null;
+      let score = 0;
+      const marker = linkItemMarker(el);
+      if (marker) {
+        // Dropbox's own class: works in every language. An unknown kind is only taken when both kinds are targets.
+        if (marker.kind ? !settings[marker.kind] : !(settings.view && settings.edit)) continue;
+        kind = marker.kind || 'link';
+        score = 4;
+        if (!best || score > best.score) best = { el, kind, score, label: textOf(el) };
+        continue;
+      }
       if (VIEW_RE.test(l)) kind = 'view';
       else if (EDIT_RE.test(l)) kind = 'edit';
 
-      let score = 0;
       if (kind) {
         if (!settings[kind]) continue;
         if (DELETE_RE.test(l)) score = 3;
@@ -541,6 +606,11 @@
     const target = pickDeleteItem(items);
     if (!target) {
       const menuText = items.map(textOf).join(' / ');
+      if (items.some(isUndecidableItem)) {
+        log(L('logUndecidableKind', rowLabel, menuText), 'warn');
+        await closeOverlays();
+        return { result: 'nothing', reason: L('reasonUndecidableKind') };
+      }
       log(L('logNothingToDelete', rowLabel, menuText), 'muted');
       await closeOverlays();
       return { result: 'nothing', reason: L('reasonNothingToDelete', menuText) };
@@ -755,6 +825,46 @@
     }
   }
 
+  // Every attribute of an element (except style), to find language-independent markers such as data-testid
+  const describeElement = (el) => {
+    // Dropbox's generated "dig-…" classes hide the meaningful ones (e.g. "delete-link"), so those are only counted
+    const classValue = (value) => {
+      const all = value.split(/\s+/).filter(Boolean);
+      const generated = all.filter((c) => c.startsWith('dig-')).length;
+      return [...all.filter((c) => !c.startsWith('dig-')), generated ? `+${generated} dig-*` : ''].filter(Boolean).join(' ');
+    };
+    const attrs = [...el.attributes]
+      .filter((a) => a.name !== 'style')
+      .map((a) => `${a.name}="${preview(a.name === 'class' ? classValue(a.value) : a.value)}"`)
+      .join(' ');
+    return `<${el.tagName.toLowerCase()}${attrs ? ' ' + attrs : ''}> "${preview(textOf(el))}"`;
+  };
+
+  // Opens the confirmation dialog of `item`, logs its structure and closes it again without confirming
+  async function inspectConfirmDialog(item) {
+    log(L('diagOpenDialog', textOf(item)));
+    simpleClick(item);
+    const dialog = await waitFor(() => getOpenDialogs()[0], DIALOG_OPEN_TIMEOUT_MS);
+    if (!dialog) {
+      log(L('diagDialogNotOpened'), 'warn');
+      return;
+    }
+    log(L('diagDialog', describeElement(dialog)));
+    [...dialog.querySelectorAll('button, [role="button"]')].filter(isVisible).forEach((b, i) => log(`  [${i}] ${describeElement(b)}`));
+    const confirmBtn = findConfirmButton();
+    log(confirmBtn ? L('diagConfirmChoice', textOf(confirmBtn)) : L('diagNoConfirmChoice'), confirmBtn ? 'ok' : 'warn');
+
+    // Close without confirming: Escape first, then a cancel-like button
+    pressEscape();
+    let closed = await waitFor(() => !dialog.isConnected || !isVisible(dialog), DIAGNOSE_DIALOG_CLOSE_MS, { abortOnStop: false });
+    if (!closed) {
+      const cancel = findCancelButton(dialog);
+      if (cancel) simpleClick(cancel);
+      closed = await waitFor(() => !dialog.isConnected || !isVisible(dialog), DIAGNOSE_DIALOG_CLOSE_MS, { abortOnStop: false });
+    }
+    log(closed ? L('diagDialogClosed') : L('diagDialogStillOpen'), closed ? 'muted' : 'warn');
+  }
+
   const describeButton = (b) => {
     const cs = getComputedStyle(b);
     return `<${b.tagName.toLowerCase()}> aria-label="${b.getAttribute('aria-label') || ''}" title="${b.getAttribute('title') || ''}" ` +
@@ -803,8 +913,13 @@
         return;
       }
       log(L('diagMenuItems', items.map((i) => `"${textOf(i)}"(${i.getAttribute('role') || i.tagName.toLowerCase()})`).join(', ')));
+      items.forEach((i, n) => log(`  [${n}] ${describeElement(i)}`));
+      const menu = items[0].closest('[role="menu"], [role="listbox"]'); // Dropbox's item rows also match MENU_SELECTOR
+      if (menu) log(L('diagMenu', describeElement(menu)));
       const target = pickDeleteItem(items);
       log(target ? L('diagTarget', target.label) : L('diagNoTarget'), target ? 'ok' : 'warn');
+      // Only a recognized link-deletion item is opened; an unknown language's items are just listed
+      if (target) await inspectConfirmDialog(target.el);
       await closeOverlays();
       log(L('diagEnd'));
     } finally {

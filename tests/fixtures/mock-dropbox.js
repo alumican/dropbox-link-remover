@@ -1,13 +1,17 @@
 // A small imitation of dropbox.com/share/links: rows with a "…" button, a menu with
 // "閲覧リンクを削除" / "編集リンクを削除", a confirmation dialog and a toast.
+// Class names and test ids follow the real page (observed in Japanese, English, French and Chinese):
+// the view-link item has class "delete-link", the dialog is ".db-modal" with ".button-primary.dbmodal-button".
+// The edit-link item's markup was not observable, so it only carries its text.
 //
 // Query parameters:
 //   rows=basic|duplicates|demo   data set (default: basic)
 //   scenario=normal|submenu-ok|submenu-danger|file-dialog|no-confirm   menu / dialog behaviour (default: normal)
-//   ui=ja|en                Dropbox UI language of the mock, also set as <html lang> (default: ja)
+//   ui=ja|en|fr             Dropbox UI language of the mock, also set as <html lang> (default: ja)
 //   htmlLang=<tag>          overrides <html lang> (e.g. fr, ja-JP)
 //   linger=<ms>             a fully deleted row stays listed (with a dead "…" button) this long before it disappears
 //   loadDelay=<ms>          the list renders only after this delay, like a page that is still loading
+//   noEscape=1              Escape does not close menus or dialogs (only their buttons do)
 //   demo=1 | demo=hero      styled page for screenshots (hero: transparent, list kept to the left)
 //
 // The page exposes window.mock for the test runner:
@@ -56,8 +60,30 @@
       header: ['Name', 'Created'],
       sidebar: ['All files', 'Photos', 'Shared'],
       menubar: ['Upgrade', 'YO'],
+      close: 'Close',
+    },
+    // Strings observed on the real French UI (the edit-link wording is a guess)
+    fr: {
+      link: { view: 'lien de consultation', edit: 'lien de modification' },
+      deleteItem: (kind) => `Supprimer le ${kind}`,
+      settings: 'Paramètres des liens',
+      genericDelete: 'Supprimer',
+      fileDelete: 'Supprimer le fichier',
+      confirmLink: () => 'Supprimer le lien ?',
+      confirmFile: 'Supprimer ce fichier ?',
+      cancel: 'Annuler',
+      deleteLink: 'Supprimer le lien',
+      deleteFile: 'Supprimer',
+      toast: (name) => `Lien vers « ${name} » supprimé`,
+      more: 'Plus d’actions',
+      sort: 'Menu de tri',
+      header: ['Nom', 'Créé'],
+      sidebar: ['Tous les fichiers', 'Photos', 'Partagé'],
+      menubar: ['Mettre à niveau', 'YO'],
+      close: 'Fermer',
     },
   };
+  TEXT.ja.close = '閉じる';
   const T = TEXT[params.get('ui') || 'ja'];
   document.documentElement.lang = params.get('htmlLang') || params.get('ui') || 'ja';
 
@@ -109,16 +135,19 @@
   }
 
   const closeOverlays = () => document.querySelectorAll('.overlay').forEach((e) => e.remove());
-  document.addEventListener('keydown', (e) => e.key === 'Escape' && closeOverlays());
+  if (!params.has('noEscape')) document.addEventListener('keydown', (e) => e.key === 'Escape' && closeOverlays());
 
+  // items: [label, onClick, className?]
   function showMenu(items, anchor) {
     closeOverlays();
     const menu = document.createElement('div');
     menu.className = 'overlay';
     menu.setAttribute('role', 'menu');
-    for (const [label, onClick] of items) {
+    for (const [label, onClick, className] of items) {
       const item = document.createElement('div');
       item.setAttribute('role', 'menuitem');
+      item.dataset.testid = 'menu-action-item';
+      item.className = `dig-Menu-row ${className || ''}`.trim();
       item.textContent = label;
       item.onclick = onClick;
       menu.appendChild(item);
@@ -133,32 +162,38 @@
   function openRowMenu(i) {
     const row = data[i];
     const anchor = tbody.querySelector(`tr[data-index="${i}"] button`);
-    if (!row.links.length) return showMenu([[T.settings, closeOverlays]], anchor);
+    const itemClass = (kind) => (kind === 'view' ? 'delete-link' : ''); // real class of the view-link item
+    if (!row.links.length) return showMenu([[T.settings, closeOverlays, 'link-settings']], anchor);
     const kind = row.links[0];
     const label = T.deleteItem(T.link[kind]);
     const confirmLink = () => { closeOverlays(); showDialog(i, kind); };
     switch (scenario) {
       case 'submenu-ok': // "閲覧リンク" opens a submenu that holds the real delete item
-        return showMenu([[T.link[kind], () => showMenu([[label, confirmLink], [T.fileDelete, () => danger.push('file delete menu')]], anchor)]], anchor);
+        return showMenu([[T.link[kind], () => showMenu([[label, confirmLink, itemClass(kind)], [T.fileDelete, () => danger.push('file delete menu')]], anchor)]], anchor);
       case 'submenu-danger': // the submenu only offers generic / file deletion
         return showMenu([[T.link[kind], () => showMenu([[T.genericDelete, () => danger.push('generic delete')], [T.fileDelete, () => danger.push('file delete menu')]], anchor)]], anchor);
       case 'file-dialog': // the link item unexpectedly asks to delete a file
-        return showMenu([[label, () => { closeOverlays(); showDialog(i, kind, { aboutFile: true }); }]], anchor);
+        return showMenu([[label, () => { closeOverlays(); showDialog(i, kind, { aboutFile: true }); }, itemClass(kind)]], anchor);
       case 'no-confirm': // the confirmation dialog has no delete-like button
-        return showMenu([[label, () => { closeOverlays(); showDialog(i, kind, { okOnly: true }); }]], anchor);
+        return showMenu([[label, () => { closeOverlays(); showDialog(i, kind, { okOnly: true }); }, itemClass(kind)]], anchor);
       default:
-        return showMenu([...row.links.map((k) => [T.deleteItem(T.link[k]), () => { closeOverlays(); showDialog(i, k); }]), [T.settings, closeOverlays]], anchor);
+        return showMenu([...row.links.map((k) => [T.deleteItem(T.link[k]), () => { closeOverlays(); showDialog(i, k); }, itemClass(k)]), [T.settings, closeOverlays, 'link-settings']], anchor);
     }
   }
 
   function showDialog(i, kind, { aboutFile = false, okOnly = false } = {}) {
     const dialog = document.createElement('div');
-    dialog.className = 'overlay';
+    dialog.className = 'overlay db-modal';
     dialog.setAttribute('role', 'dialog');
-    dialog.innerHTML = aboutFile
-      ? `<p>${T.confirmFile}</p><button>${T.cancel}</button><button>${T.deleteFile}</button>`
-      : `<p>${T.confirmLink(T.link[kind])}</p><button>${T.cancel}</button><button>${okOnly ? 'OK' : T.deleteLink}</button>`;
-    const [cancel, confirm] = dialog.querySelectorAll('button');
+    // Like Dropbox's modal: close (×), primary (confirm) and tertiary (cancel) buttons.
+    // okOnly: a changed UI where the confirm button carries neither Dropbox's class nor delete wording.
+    const confirmClass = okOnly ? '' : 'button-primary dbmodal-button';
+    dialog.innerHTML = `<p>${aboutFile ? T.confirmFile : T.confirmLink(T.link[kind])}</p>
+      <button class="db-modal-x" aria-label="${T.close}"></button>
+      <button class="${confirmClass}">${aboutFile ? T.deleteFile : okOnly ? 'OK' : T.deleteLink}</button>
+      <button class="button-tertiary dbmodal-button">${T.cancel}</button>`;
+    const [close, confirm, cancel] = dialog.querySelectorAll('button');
+    close.onclick = closeOverlays;
     cancel.onclick = closeOverlays;
     confirm.onclick = () => {
       if (aboutFile) return danger.push('file deletion confirmed');
