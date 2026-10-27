@@ -1,5 +1,7 @@
 # Dropbox Link Remover
 
+![Dropbox Link Remover deleting shared links](docs/hero.png)
+
 A Chrome extension that bulk-deletes the shared links on [dropbox.com/share/links](https://www.dropbox.com/share/links). It repeats Dropbox's own steps for each row — "…" menu, "Delete view link" / "Delete edit link", confirm — until no links are left.
 
 > Use at your own risk. Deleted links cannot be restored.
@@ -19,7 +21,12 @@ Open https://www.dropbox.com/share/links. A panel appears in the bottom-right co
 
 Try Diagnose and Run 1 first. During a run, leave the tab alone: scrolling or clicking the page stops it. The copy icon in the log copies the log.
 
-The panel follows the browser language (English / Japanese); the log is always English. Timings and text patterns are constants at the top of `content.js`.
+Timings and text patterns are constants at the top of `content.js`.
+
+## Languages
+
+- Panel: 🇺🇸 English, 🇯🇵 Japanese (follows the browser language; others fall back to English). The log is always English
+- Dropbox UI: 🇺🇸 English, 🇯🇵 Japanese
 
 ## Testing
 
@@ -30,7 +37,7 @@ node tests/run.mjs          # all tests
 node tests/run.mjs safety   # tests whose name contains "safety"
 ```
 
-The tests run `content.js` against a mock Dropbox page (`tests/fixtures/`) in headless Chrome. Set `CHROME_PATH` if Chrome is not in the default location.
+The tests run `content.js` against a mock Dropbox page (`tests/fixtures/`) in headless Chrome. Set `CHROME_PATH` if Chrome is not in the default location. `node tools/screenshots.mjs` regenerates the image above.
 
 ## License
 

@@ -1,0 +1,68 @@
+/* Styling for the mock page when it is opened with ?demo=1 (screenshots). Generic file-list look, no Dropbox branding. */
+body.demo {
+  margin: 0; height: 100vh; overflow: hidden;
+  display: grid; grid-template-columns: 216px 1fr; grid-template-rows: 56px 1fr;
+  font: 14px/1.5 "Roboto", "Noto Sans JP", sans-serif; color: #1e1919; background: #fff;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Top bar */
+.demo [role="menubar"] {
+  grid-column: 1 / -1; display: flex; align-items: center; justify-content: flex-end; gap: 16px;
+  padding: 0 24px; border-bottom: 1px solid #ece9e5;
+}
+.demo [role="menubar"] [role="menuitem"]:first-child { color: #0061fe; font-weight: 500; }
+.demo [role="menubar"] [role="menuitem"]:last-child {
+  width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%;
+  background: #6b5bd2; color: #fff; font-size: 12px; font-weight: 500;
+}
+
+/* Sidebar */
+.demo .sidebar { padding: 16px 12px; border-right: 1px solid #ece9e5; }
+.demo .sidebar [role="row"] { padding: 8px 12px; border-radius: 8px; color: #52504c; }
+.demo .sidebar [role="row"]:last-child { background: #f3f1ee; color: #1e1919; font-weight: 500; }
+
+/* Link list */
+.demo main { padding: 20px 32px; overflow: hidden; }
+.demo table { width: 100%; border-collapse: collapse; }
+.demo th {
+  padding: 8px; text-align: left; font-size: 12px; font-weight: 500; color: #736e69;
+  border-bottom: 1px solid #ece9e5;
+}
+.demo th button { border: 0; background: none; color: inherit; font: inherit; }
+.demo td { height: 48px; padding: 0 8px; border-bottom: 1px solid #f1eeea; }
+.demo td:first-child { display: flex; align-items: center; gap: 12px; height: 48px; }
+.demo td:first-child::before {
+  content: ""; width: 28px; height: 28px; flex: none; border-radius: 6px;
+  background: linear-gradient(135deg, #dbe7ff, #b9cfff);
+}
+.demo td:nth-child(2) { color: #736e69; font-size: 13px; }
+.demo td:last-child { width: 40px; text-align: right; }
+.demo [data-testid="open-menu-button"] {
+  width: 28px !important; height: 28px !important; border: 0; border-radius: 6px;
+  background: transparent; color: #52504c; cursor: pointer;
+}
+.demo [data-testid="open-menu-button"]::after { content: "⋯"; font-size: 18px; line-height: 1; }
+
+/* Menu, dialog and toast */
+.demo [role="menu"] {
+  position: fixed; width: 200px; padding: 6px; border-radius: 10px; background: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,.08), 0 12px 32px rgba(0,0,0,.14);
+}
+.demo [role="menuitem"] { padding: 8px 10px; border-radius: 6px; }
+.demo [role="menu"] [role="menuitem"]:first-child { background: #f3f1ee; }
+.demo [role="dialog"] {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 360px;
+  padding: 20px; border-radius: 14px; background: #fff; box-shadow: 0 0 0 100vmax rgba(0,0,0,.25), 0 16px 40px rgba(0,0,0,.2);
+  text-align: right;
+}
+.demo [role="dialog"] p { margin: 0 0 20px; text-align: left; font-size: 15px; font-weight: 500; }
+.demo [role="dialog"] button {
+  margin-left: 8px; height: 32px; padding: 0 14px; border-radius: 8px; border: 1px solid #ddd8d2;
+  background: #fff; font: inherit;
+}
+.demo [role="dialog"] button:last-child { border-color: #1e1919; background: #1e1919; color: #fff; }
+.demo #status:not(:empty) {
+  position: fixed; left: 240px; bottom: 24px; padding: 10px 16px; border-radius: 8px;
+  background: #1e1919; color: #fff; font-size: 13px;
+}
