@@ -1,0 +1,8 @@
+{
+  "extName": {
+    "message": "Dropbox Link Remover"
+  },
+  "extDescription": {
+    "message": "Dropbox 공유 링크 페이지(dropbox.com/share/links)에서 보기 링크와 편집 링크를 하나씩 삭제합니다."
+  }
+}

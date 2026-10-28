@@ -19,14 +19,14 @@ Open https://www.dropbox.com/share/links. A panel appears in the bottom-right co
 - **Test**: **Diagnose** checks detection without deleting; **Run 1** deletes a single link
 - **Run all**: **Start** / **Stop**
 
-Try Diagnose and Run 1 first. During a run, leave the tab alone: scrolling or clicking the page stops it. The copy icon in the log copies the log.
+Try Diagnose and Run 1 first. During a run, leave the tab alone: scrolling or clicking the page stops it. The copy icon in the log copies the log, and the counter below it shows how many links have been deleted.
 
 Timings and text patterns are constants at the top of `content.js`.
 
 ## Languages
 
 - Dropbox UI: all languages. Menu items and the confirm button are found by Dropbox's class names (checked with 🇯🇵 🇺🇸 🇫🇷 🇨🇳). Outside 🇯🇵 Japanese and 🇺🇸 English, view and edit links cannot be told apart, so keep both Targets checked
-- Panel: 🇯🇵 Japanese, 🇺🇸 English, following the Dropbox UI language (others fall back to English). The log is always English
+- Panel: every Dropbox UI language (Dansk, Deutsch, English, Español, Français, Bahasa Indonesia, Italiano, 日本語, 한국어, Bahasa Malaysia, Norsk, Nederlands, Polski, Português, Русский, Svenska, ไทย, Українська, 简体中文, 繁體中文), following the Dropbox UI language (others fall back to English). The log is always English
 
 ## Testing
 

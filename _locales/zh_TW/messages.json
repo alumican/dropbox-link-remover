@@ -1,0 +1,8 @@
+{
+  "extName": {
+    "message": "Dropbox Link Remover"
+  },
+  "extDescription": {
+    "message": "從 Dropbox 共用連結頁面 (dropbox.com/share/links) 逐一刪除檢視連結與編輯連結。"
+  }
+}

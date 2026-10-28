@@ -45,10 +45,11 @@ const tests = [
   },
   {
     name: 'the panel falls back to English for an unsupported Dropbox UI language',
-    query: 'htmlLang=fr',
+    query: 'htmlLang=fi',
     run: async (page) => {
       same(await page.text('.label'), ['Targets', 'Test', 'Run all'], 'row labels');
       same(await page.text('#diag, #one, #start, #stop'), ['Diagnose', 'Run 1', 'Start', 'Stop'], 'buttons');
+      same(await page.text('.count'), ['0 link deleted'], 'counter');
       includes(await page.log(), 'Ready. Press “Diagnose” first');
     },
   },
@@ -206,6 +207,15 @@ const tests = [
     },
   },
   {
+    name: 'English Dropbox UI: the counter is singular for one link',
+    query: 'ui=en',
+    run: async (page) => {
+      await page.click('one');
+      await page.waitForLog('■ Finished');
+      same(await page.text('.count'), ['1 link deleted'], 'counter');
+    },
+  },
+  {
     name: 'English Dropbox UI: deletes every link',
     query: 'ui=en',
     run: async (page) => {
@@ -215,6 +225,7 @@ const tests = [
       includes(log, 'Selected “Delete edit link”');
       includes(log, 'Clicked “Delete link” in the confirmation dialog');
       includes(log, 'links deleted 3 / skipped 1 rows / failed 0 times');
+      same(await page.text('.count'), ['3 links deleted'], 'counter');
       excludes(log, 'Upgrade');
     },
   },
@@ -246,6 +257,22 @@ const tests = [
     },
   },
   {
+    name: 'the panel follows the Dropbox UI language (French UI)',
+    query: 'ui=fr',
+    run: async (page) => {
+      same(await page.text('.label'), ['Cibles', 'Test', 'Tout exécuter'], 'row labels');
+      same(await page.text('.count'), ['Liens supprimés : 0'], 'counter');
+    },
+  },
+  {
+    name: 'the panel follows the Dropbox UI language (zh-TW is Traditional Chinese, zh-CN Simplified)',
+    query: 'htmlLang=zh-TW',
+    run: async (page) => {
+      same(await page.text('#diag, #one, #start, #stop'), ['診斷', '執行 1 個', '開始', '停止'], 'buttons');
+      check((await page.evaluate(`document.getElementById('dlr-host').shadowRoot.getElementById('panel').lang`)) === 'zh-Hant', 'panel lang');
+    },
+  },
+  {
     name: 'the panel follows the Dropbox UI language (ja-JP)',
     query: 'htmlLang=ja-JP',
     run: async (page) => {
@@ -273,7 +300,7 @@ const tests = [
       same(await page.links(), [['edit'], [], []], 'remaining links');
       includes(log, 'Selected “Supprimer le lien de consultation”');
       includes(log, 'Clicked “Supprimer le lien” in the confirmation dialog');
-      same(await page.text('.label'), ['Targets', 'Test', 'Run all'], 'panel falls back to English');
+      same(await page.text('.label'), ['Cibles', 'Test', 'Tout exécuter'], 'panel in French');
     },
   },
   {

@@ -1,0 +1,8 @@
+{
+  "extName": {
+    "message": "Dropbox Link Remover"
+  },
+  "extDescription": {
+    "message": "Verwijdert weergave- en bewerkingslinks één voor één van de Dropbox-pagina met gedeelde links (dropbox.com/share/links)."
+  }
+}

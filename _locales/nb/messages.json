@@ -1,0 +1,8 @@
+{
+  "extName": {
+    "message": "Dropbox Link Remover"
+  },
+  "extDescription": {
+    "message": "Sletter visnings- og redigeringslenker én etter én fra Dropbox-siden med delte lenker (dropbox.com/share/links)."
+  }
+}
