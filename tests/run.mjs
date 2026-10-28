@@ -261,7 +261,7 @@ const tests = [
     query: 'ui=fr',
     run: async (page) => {
       same(await page.text('.label'), ['Cibles', 'Test', 'Tout exécuter'], 'row labels');
-      same(await page.text('.count'), ['Liens supprimés : 0'], 'counter');
+      same(await page.text('.count'), ['0 lien supprimé'], 'counter');
     },
   },
   {
@@ -270,6 +270,15 @@ const tests = [
     run: async (page) => {
       same(await page.text('#diag, #one, #start, #stop'), ['診斷', '執行 1 個', '開始', '停止'], 'buttons');
       check((await page.evaluate(`document.getElementById('dlr-host').shadowRoot.getElementById('panel').lang`)) === 'zh-Hant', 'panel lang');
+    },
+  },
+  {
+    name: 'the counter uses the plural forms of the panel language (Russian)',
+    query: 'htmlLang=ru',
+    run: async (page) => {
+      same(await page.text('.count'), ['0 ссылок удалено'], 'counter');
+      await runAll(page);
+      same(await page.text('.count'), ['3 ссылки удалены'], 'counter');
     },
   },
   {

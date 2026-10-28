@@ -102,7 +102,8 @@
 
   // ---- Panel strings ----
   // The panel follows the Dropbox UI language (<html lang>), not the browser's; anything else falls back to English.
-  // One entry per Dropbox UI language. uiCount places the counter at $1; uiCountOne, if given, is used for 0 and 1.
+  // One entry per Dropbox UI language. uiCount places the counter at $1; it is a string, or forms keyed by
+  // Intl.PluralRules category (plus an optional `zero`), falling back to `other`.
   // (_locales/ only holds the extension's name and description, which Chrome shows in the browser's language.)
   const UI_MESSAGES = {
     en: {
@@ -115,8 +116,7 @@
       uiDeleteAll: 'Run all',
       uiStart: 'Start',
       uiStop: 'Stop',
-      uiCountOne: '$1 link deleted',
-      uiCount: '$1 links deleted',
+      uiCount: { zero: '$1 link deleted', one: '$1 link deleted', other: '$1 links deleted' },
       uiTest: 'Test',
       uiDiagnose: 'Diagnose',
       uiDeleteOne: 'Run 1',
@@ -160,7 +160,7 @@
       uiDeleteAll: 'Kør alle',
       uiStart: 'Start',
       uiStop: 'Stop',
-      uiCount: 'Slettede links: $1',
+      uiCount: { one: '$1 link slettet', other: '$1 links slettet' },
       uiTest: 'Test',
       uiDiagnose: 'Diagnosticer',
       uiDeleteOne: 'Kør 1',
@@ -182,7 +182,7 @@
       uiDeleteAll: 'Alle ausführen',
       uiStart: 'Starten',
       uiStop: 'Stoppen',
-      uiCount: 'Gelöschte Links: $1',
+      uiCount: { one: '$1 Link gelöscht', other: '$1 Links gelöscht' },
       uiTest: 'Test',
       uiDiagnose: 'Diagnose',
       uiDeleteOne: '1 ausführen',
@@ -204,7 +204,7 @@
       uiDeleteAll: 'Ejecutar todo',
       uiStart: 'Iniciar',
       uiStop: 'Detener',
-      uiCount: 'Enlaces eliminados: $1',
+      uiCount: { one: '$1 enlace eliminado', other: '$1 enlaces eliminados' },
       uiTest: 'Prueba',
       uiDiagnose: 'Diagnosticar',
       uiDeleteOne: 'Ejecutar 1',
@@ -226,7 +226,7 @@
       uiDeleteAll: 'Tout exécuter',
       uiStart: 'Démarrer',
       uiStop: 'Arrêter',
-      uiCount: 'Liens supprimés : $1',
+      uiCount: { one: '$1 lien supprimé', other: '$1 liens supprimés' },
       uiTest: 'Test',
       uiDiagnose: 'Diagnostic',
       uiDeleteOne: 'Exécuter 1',
@@ -248,7 +248,7 @@
       uiDeleteAll: 'Jalankan semua',
       uiStart: 'Mulai',
       uiStop: 'Hentikan',
-      uiCount: 'Tautan dihapus: $1',
+      uiCount: '$1 tautan dihapus',
       uiTest: 'Uji',
       uiDiagnose: 'Diagnosis',
       uiDeleteOne: 'Jalankan 1',
@@ -270,7 +270,7 @@
       uiDeleteAll: 'Esegui tutto',
       uiStart: 'Avvia',
       uiStop: 'Interrompi',
-      uiCount: 'Link eliminati: $1',
+      uiCount: { one: '$1 link eliminato', other: '$1 link eliminati' },
       uiTest: 'Test',
       uiDiagnose: 'Diagnostica',
       uiDeleteOne: 'Esegui 1',
@@ -292,7 +292,7 @@
       uiDeleteAll: '모두 실행',
       uiStart: '시작',
       uiStop: '중지',
-      uiCount: '삭제된 링크: $1개',
+      uiCount: '$1개 링크 삭제됨',
       uiTest: '테스트',
       uiDiagnose: '진단',
       uiDeleteOne: '1개 실행',
@@ -314,7 +314,7 @@
       uiDeleteAll: 'Jalankan semua',
       uiStart: 'Mula',
       uiStop: 'Henti',
-      uiCount: 'Pautan dipadam: $1',
+      uiCount: '$1 pautan dipadam',
       uiTest: 'Ujian',
       uiDiagnose: 'Diagnosis',
       uiDeleteOne: 'Jalankan 1',
@@ -336,7 +336,7 @@
       uiDeleteAll: 'Kjør alle',
       uiStart: 'Start',
       uiStop: 'Stopp',
-      uiCount: 'Slettede lenker: $1',
+      uiCount: { one: '$1 lenke slettet', other: '$1 lenker slettet' },
       uiTest: 'Test',
       uiDiagnose: 'Diagnostiser',
       uiDeleteOne: 'Kjør 1',
@@ -358,7 +358,7 @@
       uiDeleteAll: 'Alles uitvoeren',
       uiStart: 'Starten',
       uiStop: 'Stoppen',
-      uiCount: 'Verwijderde links: $1',
+      uiCount: { one: '$1 link verwijderd', other: '$1 links verwijderd' },
       uiTest: 'Test',
       uiDiagnose: 'Diagnose',
       uiDeleteOne: '1 uitvoeren',
@@ -380,7 +380,7 @@
       uiDeleteAll: 'Uruchom wszystko',
       uiStart: 'Start',
       uiStop: 'Zatrzymaj',
-      uiCount: 'Usunięte linki: $1',
+      uiCount: { one: '$1 link usunięty', few: '$1 linki usunięte', many: '$1 linków usuniętych', other: '$1 linku usuniętego' },
       uiTest: 'Test',
       uiDiagnose: 'Diagnostyka',
       uiDeleteOne: 'Uruchom 1',
@@ -402,7 +402,7 @@
       uiDeleteAll: 'Executar tudo',
       uiStart: 'Iniciar',
       uiStop: 'Parar',
-      uiCount: 'Links excluídos: $1',
+      uiCount: { one: '$1 link excluído', other: '$1 links excluídos' },
       uiTest: 'Teste',
       uiDiagnose: 'Diagnosticar',
       uiDeleteOne: 'Executar 1',
@@ -424,7 +424,7 @@
       uiDeleteAll: 'Выполнить все',
       uiStart: 'Начать',
       uiStop: 'Остановить',
-      uiCount: 'Удалено ссылок: $1',
+      uiCount: { one: '$1 ссылка удалена', few: '$1 ссылки удалены', many: '$1 ссылок удалено', other: '$1 ссылки удалено' },
       uiTest: 'Тест',
       uiDiagnose: 'Диагностика',
       uiDeleteOne: 'Выполнить 1',
@@ -446,7 +446,7 @@
       uiDeleteAll: 'Kör alla',
       uiStart: 'Starta',
       uiStop: 'Stoppa',
-      uiCount: 'Borttagna länkar: $1',
+      uiCount: { one: '$1 länk borttagen', other: '$1 länkar borttagna' },
       uiTest: 'Test',
       uiDiagnose: 'Diagnostisera',
       uiDeleteOne: 'Kör 1',
@@ -468,7 +468,7 @@
       uiDeleteAll: 'เรียกใช้ทั้งหมด',
       uiStart: 'เริ่ม',
       uiStop: 'หยุด',
-      uiCount: 'ลบลิงก์แล้ว: $1',
+      uiCount: '$1 ลิงก์ถูกลบแล้ว',
       uiTest: 'ทดสอบ',
       uiDiagnose: 'วินิจฉัย',
       uiDeleteOne: 'เรียกใช้ 1 รายการ',
@@ -490,7 +490,7 @@
       uiDeleteAll: 'Виконати все',
       uiStart: 'Почати',
       uiStop: 'Зупинити',
-      uiCount: 'Видалено посилань: $1',
+      uiCount: { one: '$1 посилання видалено', few: '$1 посилання видалено', many: '$1 посилань видалено', other: '$1 посилання видалено' },
       uiTest: 'Тест',
       uiDiagnose: 'Діагностика',
       uiDeleteOne: 'Виконати 1',
@@ -512,7 +512,7 @@
       uiDeleteAll: '全部执行',
       uiStart: '开始',
       uiStop: '停止',
-      uiCount: '已删除 $1 个链接',
+      uiCount: '$1 个链接已删除',
       uiTest: '测试',
       uiDiagnose: '诊断',
       uiDeleteOne: '执行 1 个',
@@ -534,7 +534,7 @@
       uiDeleteAll: '全部執行',
       uiStart: '開始',
       uiStop: '停止',
-      uiCount: '已刪除 $1 個連結',
+      uiCount: '$1 個連結已刪除',
       uiTest: '測試',
       uiDiagnose: '診斷',
       uiDeleteOne: '執行 1 個',
@@ -557,6 +557,13 @@
   // $1..$9 are replaced with the substitutions, like chrome.i18n.getMessage
   const format = (template, subs) => template.replace(/\$([1-9])/g, (_, d) => String(subs[d - 1] ?? ''));
   const t = (key, ...subs) => format(UI_MESSAGES[UI_LANG][key] ?? UI_MESSAGES.en[key] ?? key, subs);
+  const pluralRules = new Intl.PluralRules(UI_LANG);
+  // The counter text for n, with `num` (HTML) in place of $1
+  const countText = (n, num) => {
+    const forms = UI_MESSAGES[UI_LANG].uiCount;
+    const template = typeof forms === 'string' ? forms : (n === 0 && forms.zero) || forms[pluralRules.select(n)] || forms.other;
+    return format(template, [num]);
+  };
 
   // ---- Log messages (always English, so logs read the same whatever the UI language) ----
   const LOG_MESSAGES = {
@@ -1506,7 +1513,7 @@
       margin-bottom: calc(var(--space-4) - var(--space-6)); /* the body's gap is --space-6; the note sits --space-4 below */
       color: var(--color-fg-muted); font-size: var(--font-size-sm); white-space: nowrap; font-variant-numeric: tabular-nums;
     }
-    .count-num { color: var(--color-fg); font-size: var(--font-size-lg); font-weight: var(--font-weight-regular); }
+    .count-num { margin-right: var(--space-1); color: var(--color-fg); font-size: var(--font-size-lg); font-weight: var(--font-weight-regular); }
 
     /* ===== Chip (checkbox) ===== */
     .chip {
@@ -1678,8 +1685,7 @@
   }
 
   function updateUI() {
-    const countKey = deletedTotal <= 1 && 'uiCountOne' in UI_MESSAGES[UI_LANG] ? 'uiCountOne' : 'uiCount';
-    $('count').innerHTML = t(countKey, `<span class="count-num">${deletedTotal}</span>`);
+    $('count').innerHTML = countText(deletedTotal, `<span class="count-num">${deletedTotal}</span>`);
     $('panel').classList.toggle('running', running);
     for (const id of ['start', 'one', 'diag']) {
       $(id).disabled = running;
